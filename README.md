@@ -4,6 +4,8 @@
 
 Projeto **SQL-first**: toda a limpeza, modelagem e cálculo de métricas é feita em SQL (DuckDB), sobre mais de 1 milhão de linhas de vendas reais de um e-commerce do Reino Unido. Python só orquestra a execução e gera os gráficos. Excel e um dashboard web são a camada de apresentação para quem não usa SQL.
 
+Parte do meu portfólio: [santana7o.github.io](https://santana7o.github.io)
+
 **[Abrir o dashboard interativo](https://santana7o.github.io/varejo-online-sql/)** · [Relatório em Excel](relatorio/relatorio_varejo_online.xlsx) · [Consultas SQL](sql/)
 
 ![Receita mensal](assets/01_receita_mensal.png)
@@ -264,5 +266,4 @@ Chen, D. (2012). *Online Retail II* [Dataset]. UCI Machine Learning Repository. 
 
 ## Autor
 
-**Felipe Santana**, analista de dados
-GitHub: [santana7o](https://github.com/santana7o)
+Felipe Gabriel Coelho de Santana, Analista de Dados. [LinkedIn](https://www.linkedin.com/in/felipe-gabriel-coelho-de-santana-a33b49304) · [GitHub](https://github.com/santana7o)
