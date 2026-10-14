@@ -39,7 +39,7 @@ Projeto **SQL-first**: toda a limpeza, modelagem e cálculo de métricas é feit
 - **Campanha de reativação do segmento "Em risco" antes do pico de fim de ano**, começando pelos 103 clientes de maior valor da [lista priorizada](resultados/14_lista_reativacao.csv). Cada 10 p.p. de reativação adicional vale £42 mil a £80 mil.
 - **Tratar os Campeões como carteira:** atendimento dedicado e alerta quando um deles passar de 30 dias sem comprar. Eles geram dois terços da receita do ano seguinte.
 - **Investigar a queda de aquisição** (canais, preço, concorrência). O crescimento atual depende de uma base que naturalmente perde clientes.
-- **Planejar o ano a partir de agosto:** estoque dos produtos classe A, equipe e campanhas prontos antes de setembro. Clientes que entram no fim do ano devem receber a primeira comunicação forte no outubro seguinte, quando voltam a comprar.
+- **Planejar o ano a partir de agosto:** estoque dos produtos classe A, equipe e campanhas prontos antes de setembro. Clientes que entram no fim do ano devem receber comunicação forte a partir de setembro do ano seguinte, quando voltam a comprar.
 - **Validar pedidos fora do padrão** (quantidade muito acima do histórico do cliente) antes do faturamento.
 
 ## Dashboard
@@ -55,7 +55,7 @@ O **[dashboard web interativo](https://santana7o.github.io/varejo-online-sql/)**
 
 ## Stack
 
-- **DuckDB**: banco analítico local, sem servidor. A sintaxe é quase toda compatível com PostgreSQL.
+- **DuckDB**: banco analítico local, sem servidor. A sintaxe segue a do PostgreSQL, com extensões próprias usadas aqui, como `SELECT * EXCLUDE` e macros de tabela.
 - **SQL**: CTEs, window functions (`ROW_NUMBER`, `LAG`, `NTILE`, `FIRST_VALUE`, `RANK`, somas acumuladas, médias móveis), table macros, `FILTER`, `ARG_MAX`, `DATE_TRUNC`, `DATE_DIFF`.
 - **Python**: pandas para exportar resultados e matplotlib para os gráficos.
 - **Apresentação**: Excel (openpyxl) e dashboard web (HTML e Chart.js).
@@ -133,11 +133,11 @@ notas AS (
 )
 SELECT *,
     CASE
-        WHEN r >= 4 AND f >= 4 AND m >= 4 THEN '1. Campeoes'
+        WHEN r >= 4 AND f >= 4 AND m >= 4 THEN '1. Campeões'
         WHEN r >= 3 AND f >= 3            THEN '2. Leais'
         WHEN r >= 4 AND f <= 2            THEN '3. Novos / promissores'
         WHEN r <= 2 AND f >= 3            THEN '4. Em risco'
-        WHEN r = 3                        THEN '5. Precisam de atencao'
+        WHEN r = 3                        THEN '5. Precisam de atenção'
         ELSE                                   '6. Hibernando / perdidos'
     END AS segmento
 FROM notas;
@@ -155,7 +155,7 @@ O mesmo código segmenta o presente (`rfm_clientes((SELECT MAX(data) + 1 FROM fa
 
 ![Coortes](assets/03_coortes_retencao.png)
 
-Leitura: dos 368 clientes que compraram pela primeira vez em jan/2010, 22% voltaram no mês seguinte e 23% ainda compravam 12 meses depois. As coortes de set a nov/2010 caem para cerca de 10% ao mês, mas sobem para 19% a 25% em M11-M12: esses clientes não abandonaram a loja, eles compram para o Natal e voltam no Natal seguinte.
+Leitura: dos 368 clientes que compraram pela primeira vez em jan/2010, 22% voltaram no mês seguinte e 23% ainda compravam 12 meses depois. As coortes de set a nov/2010 caem para cerca de 10% ao mês, mas voltam a 19% a 25% em M12, um ano depois da primeira compra: esses clientes não abandonaram a loja, eles compram para o Natal e voltam na temporada seguinte.
 
 ### Segmentos RFM
 
@@ -213,7 +213,7 @@ A faixa usa a mediana (£646) e a média (£1.227) do que os clientes "Em risco"
 
 ![Países](assets/08_paises.png)
 
-Holanda e Austrália têm ticket médio 5 a 6 vezes maior que o do Reino Unido, com poucos clientes: perfil de atacado e conta-chave.
+Holanda e Austrália têm ticket médio 6,4 e 5,2 vezes o do Reino Unido, com poucos clientes: perfil de atacado e conta-chave.
 
 ## Como executar
 
@@ -257,10 +257,6 @@ varejo-online-sql/
 - O dimensionamento assume que o cliente reativado pela campanha gasta como o cliente que voltou sozinho. O custo da campanha e o efeito real só podem ser medidos com um teste A/B (grupo de controle sem contato).
 - O pedido de 74 mil potes (jan/2011) entra na receita bruta e no cancelamento. Na receita líquida ele se anula.
 - Dezembro de 2011 tem apenas 9 dias e fica fora das comparações mensais e anuais.
-
-## English summary
-
-SQL-first analysis of 1M+ rows of real e-commerce transactions (UCI Online Retail II) using DuckDB. It covers data cleaning and modeling, YoY KPIs, seasonality, new vs returning customers, cohort retention, RFM segmentation, an ABC product curve, cancellations, and country analysis. Highlights: the RFM rule is a SQL table macro, **backtested** on the following year (94% of "Champions" returned and drove 68% of next-year revenue). A reactivation campaign for "At risk" customers is **sized at £42k–£80k per 10 p.p. of extra reactivation**, with a prioritized customer list. Ten SQL data tests and a GitHub Actions pipeline rebuild everything from scratch on every push. The [interactive dashboard](https://santana7o.github.io/varejo-online-sql/) includes a campaign simulator.
 
 ## Fonte dos dados
 

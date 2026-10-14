@@ -92,11 +92,11 @@ notas AS (
 SELECT
     *,
     CASE
-        WHEN r >= 4 AND f >= 4 AND m >= 4 THEN '1. Campeoes'
+        WHEN r >= 4 AND f >= 4 AND m >= 4 THEN '1. Campeões'
         WHEN r >= 3 AND f >= 3            THEN '2. Leais'
         WHEN r >= 4 AND f <= 2            THEN '3. Novos / promissores'
         WHEN r <= 2 AND f >= 3            THEN '4. Em risco'
-        WHEN r = 3                        THEN '5. Precisam de atencao'
+        WHEN r = 3                        THEN '5. Precisam de atenção'
         ELSE                                   '6. Hibernando / perdidos'
     END AS segmento
 FROM notas;

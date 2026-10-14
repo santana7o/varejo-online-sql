@@ -1,6 +1,7 @@
 -- =====================================================================
--- 08 - Cancelamentos: taxa mensal e produtos com mais valor cancelado
--- Pergunta: quanto da receita se perde em cancelamentos e onde?
+-- 08 - Cancelamentos: taxa mensal
+-- Pergunta: quanto da receita se perde em cancelamentos a cada mes?
+-- (os produtos com mais valor cancelado estao na consulta 09)
 -- =====================================================================
 WITH vendas_mes AS (
     SELECT DATE_TRUNC('month', data) AS mes, SUM(valor) AS receita_bruta

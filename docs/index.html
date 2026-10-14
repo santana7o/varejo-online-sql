@@ -266,7 +266,7 @@
     <header>
       <p class="pergunta">Quantos clientes voltam a comprar com o passar dos meses?</p>
       <h2 id="s-coortes">Quem entra no fim do ano volta no Natal seguinte</h2>
-      <p class="texto">Coortes de set a nov/2010 caem para cerca de 10% ao mês e sobem de novo para 19% a 25% em M11-M12: é um padrão sazonal, não abandono.</p>
+      <p class="texto">Coortes de set a nov/2010 caem para cerca de 10% ao mês e voltam a 19% a 25% em M12, um ano depois da primeira compra: é um padrão sazonal, não abandono.</p>
       <p class="nota">% dos clientes de cada coorte que compraram de novo N meses depois da primeira compra.</p>
     </header>
     <div class="visual tabela-rolagem">
@@ -287,7 +287,7 @@
     <header>
       <p class="pergunta">Como os outros países se comparam?</p>
       <h2 id="s-paises">Fora do Reino Unido, poucos clientes de ticket alto</h2>
-      <p class="texto">Em laranja, países com ticket médio 4 vezes ou mais o do Reino Unido. Holanda e Austrália compram 5 a 6 vezes mais por pedido: perfil de atacado.</p>
+      <p class="texto">Em laranja, países com ticket médio 4 vezes ou mais o do Reino Unido. Holanda e Austrália compram 6,4 e 5,2 vezes mais por pedido: perfil de atacado.</p>
     </header>
     <div class="visual"><div class="grafico"><canvas id="g-paises" role="img" aria-label="Receita dos 10 maiores países fora do Reino Unido"></canvas></div></div>
   </section>
@@ -314,7 +314,7 @@
   const librasMil = v => "£" + nf(v / 1000) + " mil";
   const librasMi = v => "£" + nf(v / 1e6, 2) + " mi";
   const pct = (v, d = 1) => nf(v, d) + "%";
-  const semSegNum = s => s.replace(/^\d\.\s*/, "").replace("Campeoes", "Campeões").replace("atencao", "atenção");
+  const semSegNum = s => s.replace(/^\d\.\s*/, "");
 
   // KPIs
   const [a1, a2] = D.kpis;

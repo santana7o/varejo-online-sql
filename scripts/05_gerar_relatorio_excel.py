@@ -22,36 +22,36 @@ CINZA_CLARO = "F2F2F0"
 borda = Border(bottom=Side(style="thin", color="D9D9D6"))
 
 ABAS = [
-    ("Qualidade", "01_qualidade_dados.csv", "Qualidade dos dados: o que foi removido e por que"),
-    ("KPIs anuais", "02_kpis_anuais.csv", "KPIs anuais (periodos comparaveis de 12 meses)"),
-    ("Receita mensal", "03_receita_mensal.csv", "Receita mensal, media movel de 3 meses e variacao anual"),
+    ("Qualidade", "01_qualidade_dados.csv", "Qualidade dos dados: o que foi removido e por quê"),
+    ("KPIs anuais", "02_kpis_anuais.csv", "KPIs anuais (períodos comparáveis de 12 meses)"),
+    ("Receita mensal", "03_receita_mensal.csv", "Receita mensal, média móvel de 3 meses e variação anual"),
     ("Novos x recorrentes", "04_novos_vs_recorrentes.csv", "Clientes e receita: novos vs recorrentes"),
-    ("Coortes", "05_coortes_retencao.csv", "Retencao por coorte de primeira compra"),
-    ("RFM", "06_rfm_segmentacao.csv", "Segmentacao RFM (ultimos 12 meses)"),
+    ("Coortes", "05_coortes_retencao.csv", "Retenção por coorte de primeira compra"),
+    ("RFM", "06_rfm_segmentacao.csv", "Segmentação RFM (últimos 12 meses)"),
     ("Curva ABC", "07_pareto_produtos.csv", "Curva ABC de produtos (ano 2)"),
     ("Cancelamentos", "08_cancelamentos.csv", "Taxa de cancelamento mensal"),
     ("Cancel. produtos", "09_cancelamentos_produtos.csv", "Produtos com maior valor cancelado (ano 2)"),
-    ("Paises", "10_paises.csv", "Top 15 paises por receita (ano 2)"),
+    ("Países", "10_paises.csv", "Top 15 países por receita (ano 2)"),
     ("Dia e hora", "11_dia_hora.csv", "Pedidos por dia da semana e hora"),
-    ("Validacao RFM", "12_validacao_rfm.csv", "Validacao do RFM: o que cada segmento de dez/2010 fez nos 12 meses seguintes"),
-    ("Dimensionamento", "13_dimensionamento_reativacao.csv", "Quanto vale reativar o segmento 'Em risco' (cenarios)"),
-    ("Lista reativacao", "14_lista_reativacao.csv", "Clientes 'Em risco' priorizados para a campanha (maior valor primeiro)"),
+    ("Validação RFM", "12_validacao_rfm.csv", "Validação do RFM: o que cada segmento de dez/2010 fez nos 12 meses seguintes"),
+    ("Dimensionamento", "13_dimensionamento_reativacao.csv", "Quanto vale reativar o segmento 'Em risco' (cenários)"),
+    ("Lista reativação", "14_lista_reativacao.csv", "Clientes 'Em risco' priorizados para a campanha (maior valor primeiro)"),
 ]
 
 INSIGHTS = [
-    "Receita do ano 2 cresceu 2,5% (bruta) e 1,9% (liquida de cancelamentos), mesmo com 4% menos pedidos.",
-    "O crescimento veio do ticket medio (+6,8%), nao de volume nem de novos clientes.",
-    "Aquisicao caiu: em set-nov, 600 clientes novos em 2011 contra 940 em 2010 (-36%).",
-    "A base ja existente sustenta o negocio: ~90% da receita mensal do ano 2 vem de clientes recorrentes.",
-    "Set-nov concentram 37% da receita do ano. Estoque e campanhas precisam estar prontos ate agosto.",
-    "RFM: 22% dos clientes (Campeoes) geram 64% da receita. 652 clientes 'Em risco' somam £795 mil.",
+    "A receita do ano 2 cresceu 2,5% (bruta) e 1,9% (líquida de cancelamentos), mesmo com 4% menos pedidos.",
+    "O crescimento veio do ticket médio (+6,8%), não de volume nem de clientes novos.",
+    "A aquisição caiu: em set-nov, 600 clientes novos em 2011 contra 940 em 2010 (-36%).",
+    "A base existente sustenta o negócio: cerca de 90% da receita mensal do ano 2 vem de clientes recorrentes.",
+    "Set-nov concentram 37% da receita do ano. Estoque e campanhas precisam estar prontos até agosto.",
+    "RFM: 22% dos clientes (Campeões) geram 64% da receita. 652 clientes 'Em risco' somam £795 mil.",
     "Curva ABC: 832 de 3.904 produtos (21%) respondem por 80% da receita.",
-    "Cancelamento mediano de 2,3% ao mes. O pico de jan/11 (13,7%) e um unico pedido de 74 mil unidades.",
-    "Fora do Reino Unido estao 15% da receita. Holanda e Australia tem ticket 5-6x maior (perfil atacado).",
-    "Pedidos concentrados de terca a quinta, das 10h as 15h. Quase nenhum pedido aos sabados.",
-    "Validacao: segmentando em dez/2010, 94% dos Campeoes voltaram e geraram 68% da receita do ano seguinte.",
-    "'Em risco' perde 47% da receita por cliente no ano seguinte. Cada 10 p.p. de reativacao vale £42-80 mil.",
-    "103 clientes respondem por metade da receita do segmento 'Em risco': a lista de reativacao comeca por eles.",
+    "Cancelamento mediano de 2,3% ao mês. O pico de jan/11 (13,7%) é um único pedido de 74 mil unidades.",
+    "Fora do Reino Unido estão 15% da receita. Holanda e Austrália têm ticket 6,4 e 5,2 vezes o do Reino Unido (perfil atacado).",
+    "Pedidos concentrados de terça a quinta, das 10h às 15h. Quase nenhum pedido aos sábados.",
+    "Validação: segmentando em dez/2010, 94% dos Campeões voltaram e geraram 68% da receita do ano seguinte.",
+    "'Em risco' perde 47% da receita por cliente no ano seguinte. Cada 10 p.p. de reativação vale £42-80 mil.",
+    "103 clientes respondem por metade da receita do segmento 'Em risco': a lista de reativação começa por eles.",
 ]
 
 
@@ -94,7 +94,7 @@ def aba_resumo(wb):
     ws = wb.active
     ws.title = "Resumo"
     ws.sheet_view.showGridLines = False
-    titulo(ws, "Varejo online (UK), dez/2009 a dez/2011: analise de vendas e clientes em SQL")
+    titulo(ws, "Varejo online (UK), dez/2009 a dez/2011: análise de vendas e clientes em SQL")
     ws["A2"] = "Fonte: Online Retail II, UCI Machine Learning Repository (CC BY 4.0). Valores em libras (£)."
     ws["A2"].font = Font(name=FONTE, italic=True, size=9, color="52514E")
 
@@ -107,7 +107,7 @@ def aba_resumo(wb):
         ("Ticket medio (£)", "ticket_medio", "#,##0.00"),
         ("Pedidos por cliente", "pedidos_por_cliente", "0.00"),
     ]
-    cabecalho(ws, 4, ["Indicador", "Ano 1 (dez/09-nov/10)", "Ano 2 (dez/10-nov/11)", "Variacao"])
+    cabecalho(ws, 4, ["Indicador", "Ano 1 (dez/09-nov/10)", "Ano 2 (dez/10-nov/11)", "Variação"])
     for i, (nome, col, fmt) in enumerate(linhas, start=5):
         ws.cell(row=i, column=1, value=nome).font = Font(name=FONTE, size=10, bold=True)
         for j in (0, 1):
@@ -118,7 +118,7 @@ def aba_resumo(wb):
         for j in range(1, 5):
             ws.cell(row=i, column=j).border = borda
 
-    ws["A13"] = "Principais conclusoes"
+    ws["A13"] = "Principais conclusões"
     ws["A13"].font = Font(name=FONTE, bold=True, size=12, color=AZUL_ESCURO)
     for i, txt in enumerate(INSIGHTS, start=14):
         c = ws.cell(row=i, column=1, value=f"{i - 13}. {txt}")
@@ -155,9 +155,9 @@ def grafico_rfm(ws, n):
 
 
 def aba_graficos(wb):
-    ws = wb.create_sheet("Graficos")
+    ws = wb.create_sheet("Gráficos")
     ws.sheet_view.showGridLines = False
-    titulo(ws, "Graficos")
+    titulo(ws, "Gráficos")
     linha = 3
     for png in sorted(ASSETS.glob("*.png")):
         img = XLImage(str(png))

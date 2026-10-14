@@ -68,7 +68,7 @@ def receita_mensal():
     ax.set_ylim(0, 1.6e6)
     ax.set_title("Receita mensal: forte sazonalidade de fim de ano")
     ax.legend(loc="upper left", ncols=2)
-    salvar(fig, "01_receita_mensal.png", "Receita de vendas validas por mes, ano 1 vs ano 2")
+    salvar(fig, "01_receita_mensal.png", "Receita de vendas válidas por mês, ano 1 vs ano 2")
 
 
 def novos_clientes():
@@ -78,14 +78,14 @@ def novos_clientes():
     ax.bar(df.mes, df.clientes_novos, color=cores, width=0.75)
     ax.set_xticks(range(len(df)))
     ax.set_xticklabels([rotulo_mes(m) if i % 2 == 0 else "" for i, m in enumerate(df.mes)], fontsize=8)
-    ax.set_title("Clientes novos por mes: aquisicao caiu no ano 2")
+    ax.set_title("Clientes novos por mês: aquisição caiu no ano 2")
     for i in (8, 9, 10, 20, 21, 22):
         ax.text(i, df.clientes_novos.iloc[i] + 8, int(df.clientes_novos.iloc[i]),
                 ha="center", fontsize=8, color=TEXTO_2)
     ax.text(0.99, 0.92, "set-nov: 940 (2010) vs 600 (2011), -36%", transform=ax.transAxes,
             ha="right", color=TEXTO, fontsize=9.5)
     salvar(fig, "02_clientes_novos.png",
-           "Clientes que fizeram a primeira compra no mes (cinza = ano 1, azul = ano 2)")
+           "Clientes que fizeram a primeira compra no mês (cinza = ano 1, azul = ano 2)")
 
 
 def coortes():
@@ -104,7 +104,7 @@ def coortes():
     ax.set_xticks(range(tab.shape[1]), [f"M{c}" for c in tab.columns])
     ax.set_yticks(range(tab.shape[0]), [f"{rotulo_mes(c)}  (n={tam[c]})" for c in tab.index])
     ax.grid(False)
-    ax.set_title("Retencao por coorte de primeira compra (%)")
+    ax.set_title("Retenção por coorte de primeira compra (%)")
     salvar(fig, "03_coortes_retencao.png",
            "% dos clientes de cada coorte que compraram de novo N meses depois")
 
@@ -125,7 +125,7 @@ def rfm():
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
     ax.set_title("Segmentos RFM: 22% dos clientes geram 64% da receita")
     ax.legend(loc="lower right")
-    salvar(fig, "04_rfm.png", "Clientes identificados, ultimos 12 meses (dez/10-dez/11)")
+    salvar(fig, "04_rfm.png", "Clientes identificados, últimos 12 meses (dez/10-dez/11)")
 
 
 def pareto():
@@ -136,7 +136,7 @@ def pareto():
     ax.axhline(80, color=CINZA, lw=1, ls="--")
     ax.scatter([a.pct_produtos_acumulado], [a.pct_receita_acumulada], s=60, color=AZUL,
                edgecolor=FUNDO, linewidth=2, zorder=3)
-    ax.annotate(f"{int(a.ranking)} produtos ({a.pct_produtos_acumulado:.0f}% do catalogo)\n= 80% da receita",
+    ax.annotate(f"{int(a.ranking)} produtos ({a.pct_produtos_acumulado:.0f}% do catálogo)\n= 80% da receita",
                 xy=(a.pct_produtos_acumulado, 80), xytext=(32, 55), fontsize=9.5, color=TEXTO,
                 arrowprops=dict(arrowstyle="-", color=CINZA, lw=0.8))
     ax.xaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
@@ -154,14 +154,14 @@ def cancelamentos():
     ax.plot(df.mes, df.taxa_cancelamento_pct, color=AZUL, lw=2, marker="o", ms=5)
     ax.axhline(df.taxa_cancelamento_pct.median(), color=CINZA, lw=1, ls="--")
     i = df.taxa_cancelamento_pct.idxmax()
-    ax.annotate("jan/11: um unico pedido de 74 mil potes\nvendido e cancelado no mesmo dia",
+    ax.annotate("jan/11: um único pedido de 74 mil potes\nvendido e cancelado no mesmo dia",
                 xy=(i, df.taxa_cancelamento_pct[i]), xytext=(i + 1.5, 11), fontsize=9, color=TEXTO,
                 arrowprops=dict(arrowstyle="-", color=CINZA, lw=0.8))
     ax.set_xticks(range(len(df)))
     ax.set_xticklabels([rotulo_mes(m) if i % 2 == 0 else "" for i, m in enumerate(df.mes)], fontsize=8)
     ax.yaxis.set_major_formatter(mtick.PercentFormatter(decimals=0))
     ax.set_title("Taxa de cancelamento mensal")
-    salvar(fig, "06_cancelamentos.png", f"Valor cancelado / receita bruta do mes. Tracejado = mediana ({df.taxa_cancelamento_pct.median():.1f}%)")
+    salvar(fig, "06_cancelamentos.png", f"Valor cancelado / receita bruta do mês. Tracejado = mediana ({df.taxa_cancelamento_pct.median():.1f}%)")
 
 
 def dia_hora():
@@ -175,7 +175,7 @@ def dia_hora():
     ax.set_xticks(range(tab.shape[1]), [f"{h}h" for h in tab.columns])
     ax.grid(False)
     ax.set_title("Pedidos por dia da semana e hora")
-    salvar(fig, "07_dia_hora.png", "Pico entre 10h e 15h, de terca a quinta. Quase nenhum pedido aos sabados")
+    salvar(fig, "07_dia_hora.png", "Pico entre 10h e 15h, de terça a quinta. Quase nenhum pedido aos sábados")
 
 
 def paises():
@@ -188,8 +188,8 @@ def paises():
     ax.xaxis.set_major_formatter(mtick.FuncFormatter(libras_mil))
     ax.grid(axis="x", color=GRADE)
     ax.grid(axis="y", visible=False)
-    ax.set_title("Fora do Reino Unido: 15% da receita (top 10 paises)")
-    salvar(fig, "08_paises.png", "Receita e ticket medio por pedido, ano 2. Ticket medio no Reino Unido: £475")
+    ax.set_title("Fora do Reino Unido: 15% da receita (top 10 países)")
+    salvar(fig, "08_paises.png", "Receita e ticket médio por pedido, ano 2. Ticket médio no Reino Unido: £475")
 
 
 def validacao_rfm():
@@ -215,7 +215,7 @@ def validacao_rfm():
     ax.grid(axis="x", color=GRADE)
     ax.grid(axis="y", visible=False)
     ax.legend(loc="lower right")
-    ax.set_title("Validacao do RFM: os segmentos preveem o ano seguinte")
+    ax.set_title("Validação do RFM: os segmentos preveem o ano seguinte")
     salvar(fig, "09_validacao_rfm.png",
            "Receita por cliente antes e depois de segmentar em dez/2010. 'Em risco' perde metade do valor")
 

@@ -6,7 +6,7 @@ SELECT
     ISODOW(data_hora)                                   AS dia_semana_num,   -- 1 = segunda
     CASE ISODOW(data_hora)
         WHEN 1 THEN 'Seg' WHEN 2 THEN 'Ter' WHEN 3 THEN 'Qua' WHEN 4 THEN 'Qui'
-        WHEN 5 THEN 'Sex' WHEN 6 THEN 'Sab' ELSE 'Dom' END AS dia_semana,
+        WHEN 5 THEN 'Sex' WHEN 6 THEN 'Sáb' ELSE 'Dom' END AS dia_semana,
     HOUR(data_hora)                                     AS hora,
     COUNT(*)                                            AS pedidos,
     ROUND(SUM(valor), 0)                                AS receita
