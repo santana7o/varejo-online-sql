@@ -1,0 +1,10 @@
+data/*.zip
+data/*.xlsx
+data/*.duckdb
+data/*.duckdb.wal
+__pycache__/
+.venv/
+.ipynb_checkpoints/
+~$*.xlsx
+.DS_Store
+.claude/

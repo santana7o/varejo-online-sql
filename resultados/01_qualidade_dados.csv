@@ -1,0 +1,9 @@
+regra,linhas,pct_da_base
+Linhas na base bruta,1067371,100.0
+Linhas duplicadas identicas,34335,3.2
+"Codigos que nao sao produto (frete, taxas, testes)",5930,0.6
+Preco unitario zerado ou negativo,6207,0.6
+Linhas de cancelamento (nota iniciada em C),19494,1.8
+Linhas sem cliente identificado,243007,22.8
+Linhas de venda valida (fato_vendas),1003340,94.0
+Linhas de venda valida com cliente identificado,776579,72.8

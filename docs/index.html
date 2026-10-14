@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Varejo online em SQL</title>
+<meta name="description" content="Dashboard interativo: análise de 1 milhão de linhas de vendas de um e-commerce do Reino Unido, feita em SQL (DuckDB).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --fundo: #fcfcfb;
+    --superficie: #f3f3f0;
+    --tinta: #1b1f26;
+    --tinta-2: #55575c;
+    --grade: #e4e3de;
+    --azul: #2a78d6;
+    --azul-escuro: #1a4f91;
+    --laranja: #eb6834;
+    --cinza: #a3a29c;
+    --raio: 6px;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; scroll-padding-top: 24px; }
+  body {
+    margin: 0;
+    background: var(--fundo);
+    color: var(--tinta);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    font-variant-numeric: tabular-nums;
+  }
+  a { color: var(--azul-escuro); text-underline-offset: 3px; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid var(--azul); outline-offset: 2px; border-radius: 3px; }
+
+  /* Estrutura: barra lateral + conteudo */
+  .app { display: grid; grid-template-columns: 252px minmax(0, 1fr); max-width: 1600px; margin: 0 auto; }
+  .lateral { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 32px 24px; border-right: 1px solid var(--grade); display: flex; flex-direction: column; gap: 28px; }
+  .lateral .autor { font-size: 14px; color: var(--tinta-2); margin: 0; }
+  .lateral .projeto { font-size: 20px; font-weight: 700; line-height: 1.2; letter-spacing: -0.01em; margin: 4px 0 6px; }
+  .lateral .meta { font-size: 13px; color: var(--tinta-2); margin: 0; }
+  .indice { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .indice a { display: block; padding: 7px 10px 7px 12px; border-left: 2px solid var(--grade); color: var(--tinta-2); text-decoration: none; font-size: 14px; line-height: 1.35; }
+  .indice a:hover { color: var(--tinta); border-left-color: var(--cinza); }
+  .indice a[aria-current="true"] { color: var(--tinta); font-weight: 600; border-left-color: var(--azul); }
+  .lateral .links { margin-top: auto; display: grid; gap: 6px; font-size: 14px; }
+
+  main { padding: 40px 56px 64px; min-width: 0; }
+
+  /* Abertura */
+  .abertura { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 56px; align-items: end; padding-bottom: 40px; }
+  .abertura .contexto { color: var(--tinta-2); margin: 0 0 14px; font-size: 15px; }
+  h1 { font-size: clamp(32px, 3.6vw, 52px); line-height: 1.06; letter-spacing: -0.02em; font-weight: 700; margin: 0; }
+  .abertura .lead { font-size: 18px; color: var(--tinta-2); max-width: 58ch; margin: 20px 0 0; }
+  .kpis { display: grid; grid-template-columns: 1fr 1fr; border-top: 2px solid var(--tinta); }
+  .kpi { padding: 16px 20px 16px 0; border-bottom: 1px solid var(--grade); }
+  .kpi:nth-child(2n) { padding-left: 20px; border-left: 1px solid var(--grade); }
+  .kpi .nome { font-size: 14px; color: var(--tinta-2); }
+  .kpi .valor { font-size: 30px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25; }
+  .kpi .delta { font-size: 14px; font-weight: 600; }
+  .delta.sobe { color: var(--azul-escuro); }
+  .delta.desce { color: #b4471c; }
+  .kpi .base { font-size: 13px; color: var(--tinta-2); font-weight: 400; }
+  .abertura .nota { grid-column: 2; margin-top: -40px; }
+
+  /* Secoes: texto a esquerda, grafico a direita */
+  section { display: grid; grid-template-columns: minmax(250px, 0.8fr) minmax(0, 2fr); gap: 20px 56px; padding: 48px 0; border-top: 1px solid var(--grade); align-items: start; }
+  section > header { grid-column: 1; }
+  section > .visual { grid-column: 2; grid-row: 1 / span 2; min-width: 0; }
+  section > .apoio { grid-column: 1; }
+  .pergunta { font-size: 15px; color: var(--tinta-2); margin: 0 0 6px; }
+  h2 { font-size: clamp(22px, 2vw, 27px); line-height: 1.2; letter-spacing: -0.01em; margin: 0; font-weight: 600; }
+  section > header p.texto { margin: 12px 0 0; color: var(--tinta-2); }
+  .grafico { position: relative; height: 380px; }
+  .nota { font-size: 13px; color: var(--tinta-2); margin: 12px 0 0; max-width: 75ch; }
+
+  .alternar { display: inline-flex; flex-wrap: wrap; border: 1px solid var(--grade); border-radius: var(--raio); padding: 3px; background: var(--superficie); }
+  .alternar button { font: inherit; font-size: 14px; border: 0; background: transparent; color: var(--tinta-2); padding: 6px 12px; border-radius: 4px; cursor: pointer; text-align: left; }
+  .alternar button[aria-pressed="true"] { background: var(--fundo); color: var(--tinta); font-weight: 600; box-shadow: 0 0 0 1px var(--grade); }
+
+  /* Simulador: bloco escuro de largura total */
+  section.simulador { background: var(--tinta); color: #f4f4f1; border-radius: 10px; padding: 40px; border-top: 0; margin: 8px 0; }
+  .simulador > header { grid-column: 1 / -1; max-width: 72ch; }
+  .simulador > .visual { grid-column: 1 / -1; grid-row: auto; }
+  .simulador .pergunta { color: #b9bcc2; }
+  .simulador h2 { color: #fff; }
+  .simulador p.texto { color: #c9ccd1; }
+  .simulador .nota { color: #9a9ea6; }
+  .sim-grade { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.3fr); gap: 32px; align-items: start; }
+  .controle label { display: block; font-size: 15px; color: #c9ccd1; margin-bottom: 8px; }
+  .controle .pp { font-size: 56px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; color: #fff; }
+  .controle .pp small { font-size: 18px; font-weight: 500; color: #c9ccd1; margin-left: 6px; }
+  input[type=range] { width: 100%; margin: 18px 0 6px; accent-color: var(--laranja); height: 28px; }
+  .escala { display: flex; justify-content: space-between; font-size: 12px; color: #9a9ea6; }
+  .resultado { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #3a3f48; border-radius: var(--raio); overflow: hidden; }
+  .resultado > div { background: #232830; padding: 16px; }
+  .resultado .nome { font-size: 13px; color: #b9bcc2; }
+  .resultado .numero { font-size: 28px; font-weight: 600; color: #fff; }
+  .resultado .numero.destaque { color: #ffa47c; }
+  .resultado .largo { grid-column: 1 / -1; }
+  .lista { grid-column: 1 / -1; margin-top: 12px; }
+  .lista h3 { font-size: 16px; font-weight: 600; margin: 0 0 10px; color: #fff; }
+  .tabela-rolagem { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 7px 10px 7px 0; white-space: nowrap; }
+  th { font-weight: 500; color: var(--tinta-2); border-bottom: 1px solid var(--grade); }
+  td.num, th.num { text-align: right; }
+  .simulador th { color: #9a9ea6; border-color: #3a3f48; }
+  .simulador td { border-bottom: 1px solid #2c313a; color: #e7e8ea; }
+
+  /* Coortes */
+  .coortes td, .coortes th { padding: 0; text-align: center; font-size: 12.5px; }
+  .coortes th { padding: 6px 4px; }
+  .coortes td.rot { text-align: left; padding-right: 10px; color: var(--tinta-2); font-size: 13px; }
+  .coortes td.cel { width: 7%; height: 32px; border: 2px solid var(--fundo); border-radius: 3px; }
+
+  footer { border-top: 1px solid var(--grade); padding-top: 24px; font-size: 14px; color: var(--tinta-2); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 56px; }
+  footer p { margin: 0; }
+
+  /* Telas medias: indice vira barra no topo */
+  @media (max-width: 1100px) {
+    .app { grid-template-columns: 1fr; }
+    .lateral { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--grade); padding: 20px 32px; gap: 14px; }
+    .indice { display: flex; flex-wrap: wrap; gap: 4px 16px; }
+    .indice a { border-left: 0; padding: 2px 0; }
+    .indice a[aria-current="true"] { border-left: 0; }
+    .lateral .links { margin-top: 0; display: flex; gap: 20px; }
+    main { padding: 32px 32px 56px; }
+    .abertura { grid-template-columns: 1fr; gap: 32px; }
+    .abertura .nota { grid-column: 1; margin-top: -16px; }
+    section { grid-template-columns: 1fr; }
+    section > .visual { grid-column: 1; grid-row: auto; }
+    footer { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 640px) {
+    .lateral { padding: 16px; }
+    .indice { display: none; }
+    main { padding: 24px 16px 48px; }
+    .kpi .valor { font-size: 24px; }
+    .kpi { padding-right: 12px; }
+    .kpi:nth-child(2n) { padding-left: 12px; }
+    .sim-grade { grid-template-columns: 1fr; }
+    section.simulador { padding: 24px 18px; }
+    .grafico { height: 300px; }
+    .controle .pp { font-size: 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="lateral">
+    <div>
+      <p class="autor">Felipe Santana, analista de dados</p>
+      <p class="projeto">Varejo online em SQL</p>
+      <p class="meta">1.067.371 linhas de vendas, dez/2009 a dez/2011, analisadas em DuckDB.</p>
+    </div>
+    <nav aria-label="Seções">
+      <ol class="indice">
+        <li><a href="#topo">Resumo</a></li>
+        <li><a href="#receita">Sazonalidade</a></li>
+        <li><a href="#novos">Novos vs recorrentes</a></li>
+        <li><a href="#rfm">Segmentos RFM</a></li>
+        <li><a href="#simulador">Simulador de reativação</a></li>
+        <li><a href="#retencao">Retenção por coorte</a></li>
+        <li><a href="#cancelamentos">Cancelamentos</a></li>
+        <li><a href="#paises">Países</a></li>
+      </ol>
+    </nav>
+    <div class="links">
+      <a href="https://github.com/santana7o/varejo-online-sql">Código no GitHub</a>
+      <a href="https://github.com/santana7o/varejo-online-sql/tree/main/sql">Consultas SQL</a>
+    </div>
+  </aside>
+
+  <main>
+  <header class="abertura" id="topo">
+    <div>
+      <p class="contexto">E-commerce de presentes do Reino Unido, dez/2009 a dez/2011.</p>
+      <h1>A receita cresceu, mas quase só com quem já era cliente</h1>
+      <p class="lead">O ano 2 faturou mais com menos pedidos, porque o ticket médio subiu. A entrada de clientes novos caiu um terço, e 64% da receita depende de 919 clientes.</p>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <p class="nota">Ano 1 = dez/2009 a nov/2010. Ano 2 = dez/2010 a nov/2011. Dezembro de 2011 tem só 9 dias e fica fora.</p>
+  </header>
+
+  <section id="receita" aria-labelledby="s-receita">
+    <header>
+      <p class="pergunta">Qual é a sazonalidade?</p>
+      <h2 id="s-receita">Setembro a novembro trazem 37% da receita do ano</h2>
+      <p class="texto">Os dois anos têm o mesmo formato. Estoque, equipe e campanhas precisam estar prontos até agosto.</p>
+    </header>
+    <div class="visual"><div class="grafico"><canvas id="g-receita" role="img" aria-label="Receita mensal do ano 1 e do ano 2"></canvas></div></div>
+  </section>
+
+  <section id="novos" aria-labelledby="s-novos">
+    <header>
+      <p class="pergunta">O crescimento vem de clientes novos ou da base?</p>
+      <h2 id="s-novos">A aquisição caiu 36% e a base sustenta 90% da receita</h2>
+      <p class="texto">Em set-nov, 600 clientes novos em 2011 contra 940 em 2010. O negócio cresce sobre uma base que, naturalmente, perde clientes.</p>
+    </header>
+    <div class="visual"><div class="grafico"><canvas id="g-novos" role="img" aria-label="Clientes novos e recorrentes por mês"></canvas></div></div>
+    <div class="apoio">
+      <div class="alternar" role="group" aria-label="Medida do gráfico">
+        <button type="button" data-novos="clientes" aria-pressed="true">Clientes</button>
+        <button type="button" data-novos="receita" aria-pressed="false">Receita</button>
+      </div>
+      <p class="nota">Só pedidos com cliente identificado. Dez/2009 fica fora porque é o início da base: todo cliente aparece como novo.</p>
+    </div>
+  </section>
+
+  <section id="rfm" aria-labelledby="s-rfm">
+    <header>
+      <p class="pergunta">Quem são os clientes que importam, e a segmentação funciona?</p>
+      <h2 id="s-rfm">22% dos clientes geram 64% da receita, e o segmento prevê o ano seguinte</h2>
+      <p class="texto">Segmentação RFM (recência, frequência e valor) dos últimos 12 meses. Para validar a regra, ela foi aplicada em dez/2010 e comparada com o que cada cliente fez nos 12 meses seguintes.</p>
+    </header>
+    <div class="visual"><div class="grafico"><canvas id="g-rfm" role="img" aria-label="Segmentos RFM"></canvas></div></div>
+    <div class="apoio">
+      <div class="alternar" role="group" aria-label="Visão da segmentação">
+        <button type="button" data-rfm="hoje" aria-pressed="true">Segmentos hoje</button>
+        <button type="button" data-rfm="validacao" aria-pressed="false">Validação: o que aconteceu depois</button>
+      </div>
+      <p class="nota" id="nota-rfm"></p>
+    </div>
+  </section>
+
+  <section class="simulador" id="simulador" aria-labelledby="s-sim">
+    <header>
+      <p class="pergunta">Quanto vale uma campanha de reativação?</p>
+      <h2 id="s-sim">652 clientes "Em risco" somam £795 mil nos últimos 12 meses</h2>
+      <p class="texto">No histórico, 62% dos clientes Em risco voltam sozinhos, mas gastam 47% menos. A campanha só gera valor no que adiciona a essa taxa. Escolha quantos pontos percentuais a mais ela reativa.</p>
+    </header>
+    <div class="visual">
+      <div class="sim-grade">
+        <div class="controle">
+          <label for="pp">Reativação adicional sobre a taxa natural</label>
+          <div class="pp"><span id="pp-valor">10</span><small>p.p.</small></div>
+          <input type="range" id="pp" min="1" max="30" step="1" value="10" aria-describedby="pp-ajuda">
+          <div class="escala" id="pp-ajuda"><span>1 p.p.</span><span>30 p.p.</span></div>
+        </div>
+        <div class="resultado" aria-live="polite">
+          <div><span class="nome">Clientes reativados a mais</span><div class="numero" id="r-clientes"></div></div>
+          <div><span class="nome">Taxa de retorno com a campanha</span><div class="numero" id="r-taxa"></div></div>
+          <div class="largo"><span class="nome">Receita adicional estimada em 12 meses</span><div class="numero destaque" id="r-receita"></div></div>
+        </div>
+      </div>
+      <p class="nota">Faixa: mediana (£646) e média (£1.227) do que os clientes Em risco de dez/2010 que voltaram gastaram no ano seguinte. Não inclui o custo da campanha.</p>
+    </div>
+    <div class="lista">
+      <h3 id="lista-titulo">Por onde começar: os 10 clientes de maior valor</h3>
+      <div class="tabela-rolagem">
+        <table aria-labelledby="lista-titulo">
+          <thead><tr><th>Prioridade</th><th>Cliente</th><th>País</th><th>Última compra</th><th class="num">Pedidos (12m)</th><th class="num">Receita (12m)</th><th class="num">% acumulado</th></tr></thead>
+          <tbody id="lista"></tbody>
+        </table>
+      </div>
+      <p class="nota">Os 103 primeiros da lista concentram metade da receita do segmento. A lista completa está em <a href="https://github.com/santana7o/varejo-online-sql/blob/main/resultados/14_lista_reativacao.csv" style="color:#ffa47c">resultados/14_lista_reativacao.csv</a>.</p>
+    </div>
+  </section>
+
+  <section id="retencao" aria-labelledby="s-coortes">
+    <header>
+      <p class="pergunta">Quantos clientes voltam a comprar com o passar dos meses?</p>
+      <h2 id="s-coortes">Quem entra no fim do ano volta no Natal seguinte</h2>
+      <p class="texto">Coortes de set a nov/2010 caem para cerca de 10% ao mês e sobem de novo para 19% a 25% em M11-M12: é um padrão sazonal, não abandono.</p>
+      <p class="nota">% dos clientes de cada coorte que compraram de novo N meses depois da primeira compra.</p>
+    </header>
+    <div class="visual tabela-rolagem">
+      <table class="coortes" id="coortes" aria-label="Retenção por coorte de primeira compra, em porcentagem"></table>
+    </div>
+  </section>
+
+  <section id="cancelamentos" aria-labelledby="s-canc">
+    <header>
+      <p class="pergunta">Quanto se perde em cancelamentos?</p>
+      <h2 id="s-canc">2,3% ao mês, com um pico explicado por um pedido</h2>
+      <p class="texto">Jan/2011: 74.215 potes vendidos e cancelados no mesmo dia. Sem ele, a taxa do mês seria 2,4%.</p>
+    </header>
+    <div class="visual"><div class="grafico"><canvas id="g-canc" role="img" aria-label="Taxa de cancelamento mensal"></canvas></div></div>
+  </section>
+
+  <section id="paises" aria-labelledby="s-paises">
+    <header>
+      <p class="pergunta">Como os outros países se comparam?</p>
+      <h2 id="s-paises">Fora do Reino Unido, poucos clientes de ticket alto</h2>
+      <p class="texto">Em laranja, países com ticket médio 4 vezes ou mais o do Reino Unido. Holanda e Austrália compram 5 a 6 vezes mais por pedido: perfil de atacado.</p>
+    </header>
+    <div class="visual"><div class="grafico"><canvas id="g-paises" role="img" aria-label="Receita dos 10 maiores países fora do Reino Unido"></canvas></div></div>
+  </section>
+
+  <footer>
+    <p>Todos os números vêm das consultas SQL do repositório, rodadas em DuckDB sobre a base Online Retail II. A limpeza remove duplicatas, preços zerados e códigos que não são produto, e 10 testes de dados validam a modelagem a cada execução.</p>
+    <p>Fonte: Chen, D. (2012). Online Retail II. UCI Machine Learning Repository, CC BY 4.0. Valores em libras esterlinas. <a href="https://github.com/santana7o/varejo-online-sql">github.com/santana7o/varejo-online-sql</a></p>
+  </footer>
+  </main>
+</div>
+
+<script src="dados.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function () {
+  const D = window.DADOS;
+  const css = getComputedStyle(document.documentElement);
+  const cor = n => css.getPropertyValue(n).trim();
+  const AZUL = cor("--azul"), LARANJA = cor("--laranja"), CINZA = cor("--cinza"), GRADE = cor("--grade"), TINTA2 = cor("--tinta-2");
+  const MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"];
+  const mes = s => MESES[+s.slice(5, 7) - 1] + "/" + s.slice(2, 4);
+  const nf = (v, d = 0) => v.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
+  const libras = v => "£" + nf(v);
+  const librasMil = v => "£" + nf(v / 1000) + " mil";
+  const librasMi = v => "£" + nf(v / 1e6, 2) + " mi";
+  const pct = (v, d = 1) => nf(v, d) + "%";
+  const semSegNum = s => s.replace(/^\d\.\s*/, "").replace("Campeoes", "Campeões").replace("atencao", "atenção");
+
+  // KPIs
+  const [a1, a2] = D.kpis;
+  const kpis = [
+    ["Receita", librasMi(a2.receita), a2.var_receita_pct, librasMi(a1.receita)],
+    ["Pedidos", nf(a2.pedidos), a2.var_pedidos_pct, nf(a1.pedidos)],
+    ["Ticket médio", "£" + nf(a2.ticket_medio), a2.var_ticket_pct, "£" + nf(a1.ticket_medio)],
+    ["Clientes identificados", nf(a2.clientes_identificados), a2.var_clientes_pct, nf(a1.clientes_identificados)],
+  ];
+  document.getElementById("kpis").innerHTML = kpis.map(([n, v, d, b]) =>
+    `<div class="kpi"><div class="nome">${n}, ano 2</div><div class="valor">${v}</div>
+     <div class="delta ${d >= 0 ? "sobe" : "desce"}">${d >= 0 ? "+" : "−"}${nf(Math.abs(d), 1)}% <span class="base">vs ${b} no ano 1</span></div></div>`).join("");
+
+  if (!window.Chart) return;
+  Chart.defaults.font.family = '"IBM Plex Sans", system-ui, sans-serif';
+  Chart.defaults.font.size = 12;
+  Chart.defaults.color = TINTA2;
+  Chart.defaults.borderColor = GRADE;
+  Chart.defaults.plugins.legend.labels.boxWidth = 12;
+  Chart.defaults.plugins.legend.labels.boxHeight = 12;
+  Chart.defaults.plugins.legend.align = "start";
+  Chart.defaults.plugins.tooltip.backgroundColor = "#1b1f26";
+  Chart.defaults.plugins.tooltip.padding = 10;
+  Chart.defaults.maintainAspectRatio = false;
+  const semGradeX = { grid: { display: false }, border: { display: false } };
+
+  // Receita mensal
+  const rm = D.receita_mensal;
+  new Chart(document.getElementById("g-receita"), {
+    type: "line",
+    data: {
+      labels: ["dez", ...MESES.slice(0, 11)],
+      datasets: [
+        { label: "Ano 1 (dez/09 a nov/10)", data: rm.slice(0, 12).map(r => r.receita), borderColor: CINZA, backgroundColor: CINZA, borderWidth: 2, pointRadius: 3 },
+        { label: "Ano 2 (dez/10 a nov/11)", data: rm.slice(12, 24).map(r => r.receita), borderColor: AZUL, backgroundColor: AZUL, borderWidth: 3, pointRadius: 4 },
+      ],
+    },
+    options: {
+      interaction: { mode: "index", intersect: false },
+      scales: { x: semGradeX, y: { beginAtZero: true, border: { display: false }, ticks: { callback: librasMil } } },
+      plugins: { tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${libras(c.raw)}`,
+        afterBody: it => { const r = rm[12 + it[0].dataIndex]; return r.var_anual_pct == null ? "" : `Variação anual: ${r.var_anual_pct > 0 ? "+" : ""}${nf(r.var_anual_pct, 1)}%`; } } } },
+    },
+  });
+
+  // Novos vs recorrentes
+  const nr = D.novos_recorrentes;
+  const gNovos = new Chart(document.getElementById("g-novos"), {
+    type: "bar",
+    data: { labels: nr.map(r => mes(r.mes)), datasets: [
+      { label: "Novos", data: [], backgroundColor: LARANJA, stack: "s" },
+      { label: "Recorrentes", data: [], backgroundColor: AZUL, stack: "s" },
+    ] },
+    options: {
+      interaction: { mode: "index", intersect: false },
+      scales: { x: { ...semGradeX, stacked: true, ticks: { autoSkip: true, maxRotation: 0 } }, y: { stacked: true, border: { display: false }, ticks: {} } },
+      plugins: { tooltip: { callbacks: {} } },
+    },
+  });
+  function desenharNovos(medida) {
+    const ehReceita = medida === "receita";
+    gNovos.data.datasets[0].data = nr.map(r => ehReceita ? r.receita_novos : r.clientes_novos);
+    gNovos.data.datasets[1].data = nr.map(r => ehReceita ? r.receita_recorrentes : r.clientes_recorrentes);
+    gNovos.options.scales.y.ticks.callback = ehReceita ? librasMil : v => nf(v);
+    gNovos.options.plugins.tooltip.callbacks.label = c => ` ${c.dataset.label}: ${ehReceita ? libras(c.raw) : nf(c.raw)}`;
+    gNovos.options.plugins.tooltip.callbacks.footer = it => ehReceita ? `Recorrentes: ${pct(nr[it[0].dataIndex].pct_receita_recorrente)} da receita` : "";
+    gNovos.update();
+  }
+  desenharNovos("clientes");
+  ligarAlternar("data-novos", desenharNovos);
+
+  // RFM: hoje vs validacao
+  const rfm = D.rfm, val = D.validacao_rfm;
+  const gRfm = new Chart(document.getElementById("g-rfm"), {
+    type: "bar",
+    data: { labels: rfm.map(r => semSegNum(r.segmento)), datasets: [] },
+    options: { indexAxis: "y", scales: { y: semGradeX, x: { border: { display: false } } }, plugins: { tooltip: { callbacks: {} } } },
+  });
+  const notaRfm = document.getElementById("nota-rfm");
+  function desenharRfm(visao) {
+    if (visao === "hoje") {
+      gRfm.data.datasets = [
+        { label: "% dos clientes", data: rfm.map(r => r.pct_clientes), backgroundColor: CINZA },
+        { label: "% da receita", data: rfm.map(r => r.pct_receita), backgroundColor: AZUL },
+      ];
+      gRfm.options.scales.x.ticks = { callback: v => v + "%" };
+      gRfm.options.plugins.tooltip.callbacks.label = c => ` ${c.dataset.label}: ${pct(c.raw)}`;
+      gRfm.options.plugins.tooltip.callbacks.footer = it => { const r = rfm[it[0].dataIndex]; return `${nf(r.clientes)} clientes, receita ${librasMil(r.receita)}, última compra há ${nf(r.recencia_media_dias)} dias (média)`; };
+      notaRfm.textContent = "Clientes identificados que compraram entre 10/12/2010 e 09/12/2011. Campeões compram, em média, 10,8 vezes por ano.";
+    } else {
+      gRfm.data.datasets = [
+        { label: "Receita por cliente, 12 meses antes", data: val.map(r => r.receita_antes_por_cliente), backgroundColor: CINZA },
+        { label: "Receita por cliente, 12 meses depois", data: val.map(r => r.receita_depois_por_cliente), backgroundColor: val.map(r => r.segmento.startsWith("4.") ? LARANJA : AZUL) },
+      ];
+      gRfm.options.scales.x.ticks = { callback: v => libras(v) };
+      gRfm.options.plugins.tooltip.callbacks.label = c => ` ${c.dataset.label}: ${libras(c.raw)}`;
+      gRfm.options.plugins.tooltip.callbacks.footer = it => { const r = val[it[0].dataIndex]; return `${pct(r.pct_voltou_a_comprar)} voltaram a comprar. Receita por cliente ${r.var_receita_por_cliente_pct > 0 ? "+" : ""}${nf(r.var_receita_por_cliente_pct, 1)}%`; };
+      notaRfm.textContent = "Segmentação feita em 10/12/2010 com a mesma regra. 94% dos Campeões voltaram e geraram 68% da receita do ano seguinte. Em risco (laranja) perdeu 47% do valor por cliente.";
+    }
+    gRfm.update();
+  }
+  desenharRfm("hoje");
+  ligarAlternar("data-rfm", desenharRfm);
+
+  // Simulador
+  const dim = D.dimensionamento[0];
+  const base = dim.clientes_em_risco_hoje, taxa = dim.taxa_natural_historica_pct;
+  const med = dim.receita_por_reativado_mediana, media = dim.receita_por_reativado_media;
+  const pp = document.getElementById("pp");
+  function simular() {
+    const v = +pp.value;
+    const clientes = Math.round(base * v / 100);
+    document.getElementById("pp-valor").textContent = v;
+    document.getElementById("r-clientes").textContent = nf(clientes);
+    document.getElementById("r-taxa").textContent = pct(Math.min(100, taxa + v), 0) + " (vs " + pct(taxa, 0) + ")";
+    const arred = x => Math.round(x / 1000) * 1000;
+    document.getElementById("r-receita").textContent = `${librasMil(arred(clientes * med))} a ${librasMil(arred(clientes * media))}`;
+  }
+  pp.addEventListener("input", simular);
+  simular();
+  document.getElementById("lista").innerHTML = D.lista_reativacao.slice(0, 10).map(r => {
+    const [a, m, d] = r.data_ultima_compra.slice(0, 10).split("-");
+    return `<tr><td>${r.prioridade}</td><td>${r.cliente_id}</td><td>${r.pais}</td><td>${d}/${m}/${a} (há ${r.recencia_dias} dias)</td>
+      <td class="num">${r.pedidos_12m}</td><td class="num">${libras(r.receita_12m)}</td><td class="num">${pct(r.pct_receita_acumulada)}</td></tr>`;
+  }).join("");
+
+  // Coortes (heatmap em tabela)
+  const co = D.coortes.filter(r => r.meses_desde_entrada > 0);
+  const coortes = [...new Set(co.map(r => r.coorte))];
+  const escala = v => { const t = Math.min(v / 35, 1); const mix = (a, b) => Math.round(a + (b - a) * t); return [`rgb(${mix(238, 22)},${mix(244, 70)},${mix(252, 135)})`, t > 0.6 ? "#fff" : "#1b1f26"]; };
+  let html = "<thead><tr><th scope='col' style='text-align:left'>Coorte</th>" + Array.from({ length: 12 }, (_, i) => `<th scope="col">M${i + 1}</th>`).join("") + "</tr></thead><tbody>";
+  for (const c of coortes) {
+    const linha = co.filter(r => r.coorte === c);
+    html += `<tr><td class="rot">${mes(c)} <span style="opacity:.7">(${linha[0].tamanho_coorte})</span></td>`;
+    for (let m = 1; m <= 12; m++) {
+      const r = linha.find(x => x.meses_desde_entrada === m);
+      if (!r) { html += "<td class='cel'></td>"; continue; }
+      const [bg, fg] = escala(r.retencao_pct);
+      html += `<td class="cel" style="background:${bg};color:${fg}" title="${mes(c)}, M${m}: ${pct(r.retencao_pct)} (${r.clientes_ativos} clientes)">${nf(r.retencao_pct)}</td>`;
+    }
+    html += "</tr>";
+  }
+  document.getElementById("coortes").innerHTML = html + "</tbody>";
+
+  // Cancelamentos
+  const ca = D.cancelamentos;
+  const mediana = [...ca.map(r => r.taxa_cancelamento_pct)].sort((a, b) => a - b);
+  const medianaV = (mediana[11] + mediana[12]) / 2;
+  new Chart(document.getElementById("g-canc"), {
+    type: "line",
+    data: { labels: ca.map(r => mes(r.mes)), datasets: [
+      { label: "Taxa de cancelamento", data: ca.map(r => r.taxa_cancelamento_pct), borderColor: AZUL, backgroundColor: AZUL, borderWidth: 2, pointRadius: 2.5 },
+      { label: "Mediana (" + pct(medianaV) + ")", data: ca.map(() => medianaV), borderColor: CINZA, borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0 },
+    ] },
+    options: {
+      interaction: { mode: "index", intersect: false },
+      scales: { x: { ...semGradeX, ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } }, y: { beginAtZero: true, border: { display: false }, ticks: { callback: v => v + "%" } } },
+      plugins: { tooltip: { callbacks: { label: c => ` ${c.dataset.label}: ${pct(c.raw)}`, footer: it => `Cancelado: ${libras(ca[it[0].dataIndex].valor_cancelado)}` } } },
+    },
+  });
+
+  // Paises
+  const pa = D.paises.filter(r => r.pais !== "United Kingdom").slice(0, 10);
+  const nomesPais = { Netherlands: "Holanda", EIRE: "Irlanda", Germany: "Alemanha", France: "França", Australia: "Austrália", Spain: "Espanha", Switzerland: "Suíça", Japan: "Japão", Sweden: "Suécia", Belgium: "Bélgica" };
+  new Chart(document.getElementById("g-paises"), {
+    type: "bar",
+    data: { labels: pa.map(r => nomesPais[r.pais] || r.pais), datasets: [{ label: "Receita, ano 2", data: pa.map(r => r.receita), backgroundColor: pa.map(r => r.ticket_vs_reino_unido >= 4 ? LARANJA : AZUL) }] },
+    options: {
+      indexAxis: "y",
+      scales: { y: semGradeX, x: { border: { display: false }, ticks: { callback: librasMil, maxTicksLimit: 5 } } },
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` Receita: ${libras(c.raw)}`, footer: it => { const r = pa[it[0].dataIndex]; return `Ticket médio £${nf(r.ticket_medio)} (${nf(r.ticket_vs_reino_unido, 1)}x o do Reino Unido)\n${r.clientes} clientes, ${r.pedidos} pedidos`; } } } },
+    },
+  });
+
+  function ligarAlternar(atributo, callback) {
+    const botoes = document.querySelectorAll(`[${atributo}]`);
+    botoes.forEach(b => b.addEventListener("click", () => {
+      botoes.forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+      callback(b.getAttribute(atributo));
+    }));
+  }
+})();
+</script>
+<script>
+(function () {
+  const links = [...document.querySelectorAll(".indice a")];
+  const alvos = links.map(a => document.querySelector(a.getAttribute("href")));
+  if (!("IntersectionObserver" in window)) return;
+  const visiveis = new Map();
+  const obs = new IntersectionObserver(entradas => {
+    entradas.forEach(e => visiveis.set(e.target, e.intersectionRatio));
+    let melhor = 0, max = -1;
+    alvos.forEach((t, i) => { const r = visiveis.get(t) || 0; if (r > max) { max = r; melhor = i; } });
+    links.forEach((a, i) => a.setAttribute("aria-current", String(i === melhor)));
+  }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+  alvos.forEach(t => t && obs.observe(t));
+})();
+</script>
+</body>
+</html>

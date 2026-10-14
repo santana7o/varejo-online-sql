@@ -1,0 +1,4 @@
+cenario,pp_reativacao_adicional,clientes_em_risco_hoje,taxa_natural_historica_pct,clientes_reativados_extra,receita_por_reativado_mediana,receita_por_reativado_media,receita_extra_pela_mediana,receita_extra_pela_media
+Baixo,5,652,62.0,33.0,646.0,1227.0,21000.0,40000.0
+Medio,10,652,62.0,65.0,646.0,1227.0,42000.0,80000.0
+Alto,20,652,62.0,130.0,646.0,1227.0,84000.0,159000.0

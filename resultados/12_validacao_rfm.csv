@@ -1,0 +1,7 @@
+segmento,clientes,receita_antes_por_cliente,pct_voltou_a_comprar,receita_depois_por_cliente,var_receita_por_cliente_pct,mediana_receita_quem_voltou,pct_receita_depois
+1. Campeoes,881,5994.0,94.1,5185.0,-13.5,2139.0,67.9
+2. Leais,976,1364.0,74.9,1056.0,-22.5,680.0,15.3
+3. Novos / promissores,345,467.0,52.2,512.0,9.5,483.0,2.6
+4. Em risco,676,1443.0,62.0,760.0,-47.3,646.0,7.6
+5. Precisam de atencao,331,459.0,50.8,345.0,-24.8,378.0,1.7
+6. Hibernando / perdidos,1014,395.0,34.8,321.0,-18.9,414.0,4.8

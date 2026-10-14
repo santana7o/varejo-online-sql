@@ -1,0 +1,4 @@
+# Conta o SQL na barra de linguagens do GitHub (o projeto e SQL-first)
+*.sql linguist-detectable=true
+# Dados gerados nao entram na contagem
+docs/dados.js linguist-generated=true
